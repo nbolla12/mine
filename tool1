@@ -1,0 +1,245 @@
+import sys
+import os
+import re
+sys.path.append(r'C:\\New Folder')
+import webbrowser
+import easygui
+import itertools
+import time
+
+
+def Set_html_file():
+	
+	txt_fp = open('C:\\New Folder\\updatd_text.txt')
+	html_fp = open('C:\\New Folder\\updated.2.ada.html')
+	
+	fp_wr = open('C:\\New Folder\\changed_html.2.ada.html','w')
+	fp_wr.close()
+	fp_wr = open('C:\\New Folder\\changed_html.2.ada.html','a+')
+	
+	for i,(txt_buff,html_buff) in enumerate(itertools.izip(txt_fp,html_fp)):
+	
+		if '+++|\n' in txt_buff or '  +|\n' in txt_buff:
+			html_buff = html_buff.replace(html_buff,"</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;==><span>\n")
+			fp_wr.write(html_buff)
+			
+		#end if
+		
+		elif '+++' in txt_buff or '  +' in txt_buff:	
+			if "color:#009900" in html_buff :
+				html_buff1 =html_buff[:(html_buff.find('*&nbsp;')+6)]+ "==>"+ html_buff[(html_buff.find('*&nbsp;')+25):]
+				fp_wr.write(html_buff1)
+				
+			elif ("color:#FF0000" in html_buff):
+				
+				#For function number 99-9	 or 9-99	
+				if(re.findall("[^0-9][1-9][0-9]&nbsp;[0-9]&nbsp",html_buff)) or (re.findall("[^0-9][1-9]&nbsp;[1-9][0-9]&nbsp",html_buff)):
+					html_buff2 =html_buff[:86]+ "==>"+ html_buff[105:]
+				
+				#For function number 9-999
+				elif(re.findall("[^0-9][1-9]&nbsp;[1-9][0-9][0-9]&nbsp",html_buff)):
+					html_buff2 =html_buff[:93]+ "==>"+ html_buff[106:]
+				
+				#For function number 999-9999
+				elif(re.findall("[^0-9][1-9][0-9][0-9]&nbsp;[1-9][0-9][0-9]&nbsp",html_buff)):
+					html_buff2 =html_buff[:95]+ "==>"+ html_buff[108:]
+				
+				#For function number 99-999 or 999 -99
+				elif((re.findall("[^0-9][1-9][0-9]&nbsp;[1-9][0-9][0-9]&nbsp",html_buff))) or (re.findall("[^0-9][1-9][0-9][0-9]&nbsp;[1-9][0-9]&nbsp",html_buff)):
+					html_buff2 =html_buff[:76]+ "==>"+ html_buff[95:]
+				
+				#For function number 99-99
+				elif((re.findall("[^0-9][1-9][0-9]&nbsp;[1-9][0-9]&nbsp",html_buff))) :
+					html_buff2 =html_buff[:82]+ "==>"+ html_buff[100:]
+				
+				else:
+					#For function number 1 - 9			
+					html_buff2 =html_buff[:92]+ "==>"+ html_buff[110:]
+							
+				fp_wr.write(html_buff2)
+			
+			else:
+				html_buff3 =html_buff[:79]+ "==>"+ html_buff[97:]
+				fp_wr.write(html_buff3)
+		else:
+			fp_wr.write(html_buff)
+		
+	#End for
+	fp_wr.close()
+	txt_fp.close()
+	html_fp.close()
+#End for
+
+# For creating the directories 
+
+
+
+easygui.ccbox(msg=" **Please create the below folders in 'C:' drive\n 1.   'New Folder'\n 2.    Stripped_Txt_files \n 3.    Differ_Html_files \n 4.    Mis_Matched_diff_files "
+    , title="************* ATTENSION  **************"
+    , choices=("Create", "Already Created")
+    , image=None
+    )
+	
+choice =1
+
+
+while(choice):
+	
+	print "Stripping the files"
+	html_file =easygui.fileopenbox(	msg="Open the differ HTML file", 
+														title=None, default="*", filetypes='.html')
+														
+	head, tail = os.path.split(html_file)													
+														
+
+	fp_html= open(html_file)
+	#Size of html file
+	size_orgnl = len(fp_html.readlines( ))
+	fp_html.close()
+
+	fp_html= open(html_file)
+
+	fw= open('C:\\New Folder\\updated.2.ada.html','w')
+	fw.close()
+	fw= open('C:\\New Folder\\updated.2.ada.html','a+')
+	start_lines=[]
+	end_lines=[]
+	for i,dat in map(None,(range(size_orgnl)) ,fp_html.xreadlines( )):
+		if i<3 :
+			start_lines.append(dat)
+		elif i<(size_orgnl-5):
+			fw.write(dat)
+		else:
+			end_lines.append(dat)
+		#End for
+
+	fp_html.close()
+	fw.close()
+
+	fp_html= open('C:\\New Folder\\updated.2.ada.html')
+	#Size of html file
+	size_html = len(fp_html.readlines( ))
+	fp_html.close()
+
+	print "Getting the actual diff file ( remove deleted lines ) "
+	difer_txt_file = easygui.fileopenbox(	msg= " \n \n\n \n \n \n \n \n The Selected HTML file : "+tail, 
+														title="Open the differ TXT file", default="*", filetypes='.txt')
+														
+	head, tail2 = os.path.split(difer_txt_file)
+
+	tail2 =tail2.replace('.txt','_strip.txt')
+
+	fil = open(difer_txt_file)
+
+	print "=== Saving the total updated data to file"
+	x=[]
+	filew = open("C:\\New Folder\\Stripped_Txt_files\\"+tail2,'w')
+	filew.close()
+	filew = open("C:\\New Folder\\Stripped_Txt_files\\"+tail2,'a+')
+
+	for line in fil.xreadlines():
+		if ( ('---' in line[:3] or  '--' in line[:3] or '-' in line[:3])):
+		
+			continue
+		else:
+			
+			filew.write(line)	
+	filew.close()
+	fil.close()
+
+	fil = open("C:\\New Folder\\Stripped_Txt_files\\"+tail2)
+
+	size = len(fil.readlines( ))
+	fil.close()
+
+	fil_differ = open("C:\\New Folder\\Stripped_Txt_files\\"+tail2)
+
+	fp_txt= open('C:\\New Folder\\updatd_text.txt','w')
+	fp_txt.close()
+	fp_txt= open('C:\\New Folder\\updatd_text.txt','a+')
+
+	for ll in itertools.islice(fil_differ, 3, (size-1)):
+		fp_txt.write(ll)
+	#Close
+	fp_txt.close()
+	fil_differ.close()
+
+	fp_text= open('C:\\New Folder\\updatd_text.txt')
+
+	#Size of html file
+	size_txt = len(fp_text.readlines( ))
+
+	fp_text.close()
+
+	if (size_html != size_txt):
+		
+		choice = easygui.buttonbox(msg="The Size of "+tail+" file is not matching with "+tail2+"", 
+									title="", choices=["Exit"], 
+									image='C:\\New Folder\\apo.gif',root=None)
+									
+				
+		fp_text= open('C:\\New Folder\\Mis_Matched_diff_files\\mis_size.txt','a+')
+		fp_text.write(tail2+'\n')
+									
+		if choice == "Exit":
+			print ""
+			print " ********* Exited from the function ********** "
+			print ""
+			sys.exit()
+		
+	else:
+		
+		Set_html_file()
+	#End if
+
+	fp_html= open(html_file)
+
+	tail =tail.replace('.2.ada.html','_diff.2.ada.html')
+
+	fw= open("C:\\New Folder\\Differ_Html_files\\"+tail,'w')
+	fw.close()
+	fw= open("C:\\New Folder\\Differ_Html_files\\"+tail,'a+')
+
+	for i in range (len(start_lines)):
+		fw.write(start_lines[i])
+	#Close
+
+	fp_wr = open('C:\\New Folder\\changed_html.2.ada.html')
+
+	for buf in fp_wr.xreadlines():
+		fw.write(buf)
+	#End for
+	fp_wr.close()
+
+	for i in range (len(end_lines)):
+		fw.write(end_lines[i])
+	#Close
+
+	fw.close()
+
+	webbrowser.open("C:\\New Folder\\Differ_Html_files\\"+tail,new=1)
+	print "==========================================="
+	print "The Diffrence text file: "+"C:\\New Folder\\Stripped_Txt_files\\"+tail2
+	print "The Diffrence html file: "+"C:\\New Folder\\Differ_Html_files\\"+tail
+	print "==========================================="
+	
+	choice = easygui.ynbox(msg="Do you want to continue?" , title=" ", choices=("Yes", "No"), image=None )
+#End 
+    
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
